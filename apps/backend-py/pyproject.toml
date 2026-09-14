@@ -5,6 +5,8 @@ description = "Add your description here"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.141.1",
+    "python-logging-loki>=0.3.1",
+    "structlog>=26.1.0",
 ]
 
 [dependency-groups]

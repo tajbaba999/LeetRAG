@@ -12,6 +12,7 @@ class Settings(BaseSettings):
 
     database_url: str
     redis_url: str
+    loki_url: str | None = None
 
     jwt_access_secret: str
     jwt_refresh_secret: str
