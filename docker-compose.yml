@@ -46,6 +46,24 @@ services:
     volumes:
       - ./apps/backend/src:/app/src
 
+  backend-py:
+    build:
+      context: .
+      dockerfile: apps/backend-py/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      REDIS_URL: redis://redis:6379
+      LOKI_URL: http://loki:3100/loki/api/v1/push
+    ports:
+      - "3010:3000"
+    volumes:
+      - ./apps/backend-py/app:/app/app
+
   frontend:
     build:
       context: .

@@ -1,0 +1,22 @@
+
+> @leetplus/frontend@0.1.0 dev /Users/tajbaba/Developer/LeetPulse/.freebuff/worktrees/0d7a00fd-4bdb-4929-aea2-43b6ec111fa5/apps/frontend
+> next dev -p 3001
+
+▲ Next.js 16.2.9 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.1.234:3001
+- Environments: .env
+✓ Ready in 261ms
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/tajbaba/Developer/LeetPulse/pnpm-workspace.yaml as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /Users/tajbaba/Developer/LeetPulse/.freebuff/worktrees/0d7a00fd-4bdb-4929-aea2-43b6ec111fa5/pnpm-workspace.yaml
+
+
+ GET /login 200 in 203ms (next.js: 121ms, application-code: 83ms)
+ GET /login 200 in 53ms (next.js: 8ms, application-code: 46ms)
+ GET /login 200 in 45ms (next.js: 4ms, application-code: 41ms)
+ GET /login 200 in 30ms (next.js: 3ms, application-code: 26ms)
+ GET /login 200 in 51ms (next.js: 3ms, application-code: 47ms)
