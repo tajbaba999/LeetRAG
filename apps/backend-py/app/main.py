@@ -10,7 +10,7 @@ from starlette.requests import Request
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import Response
 
-from app.api import auth, profile
+from app.api import auth, leetcode, profile
 from app.core.config import settings
 from app.core.logging import RequestLoggingMiddleware, configure_logging
 from app.core.metrics import PrometheusMiddleware
@@ -57,6 +57,7 @@ async def metrics() -> Response:
 
 
 api_v1.include_router(auth.router)
+api_v1.include_router(leetcode.router)
 
 # Everything below requires a valid access token, same as Express's
 # router.use(authenticateToken) placed after the public routes.
