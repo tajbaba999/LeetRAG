@@ -18,7 +18,7 @@ def _username_required() -> JSONResponse:
     )
 
 
-def _int(raw: str | None, default: int) -> int:
+def parse_int(raw: str | None, default: int) -> int:
     """JS `Number(raw) || default`: anything unparsable or zero falls back."""
     try:
         return int(float(raw or "")) or default
@@ -49,8 +49,8 @@ async def progress(skip: str | None = None, limit: str | None = None) -> Any:
         return JSONResponse(
             {"message": "LEETCODE_SESSION and LEETCODE_CSRF must be set in .env"}, status_code=500
         )
-    s = max(_int(skip, 0), 0)
-    lim = min(max(_int(limit, 50), 1), 100)
+    s = max(parse_int(skip, 0), 0)
+    lim = min(max(parse_int(limit, 50), 1), 100)
 
     async def call() -> dict[str, Any]:
         batch = await fetcher.fetch_progress_questions(s, lim)
@@ -125,7 +125,7 @@ async def session_progress(username: str | None = None) -> Any:
 async def calendar(username: str | None = None, year: str | None = None) -> Any:
     if not (name := _resolve_username(username)):
         return _username_required()
-    y = _int(year, 0) or None  # optional: omitted -> LeetCode's current year
+    y = parse_int(year, 0) or None  # optional: omitted -> LeetCode's current year
 
     async def call() -> dict[str, Any]:
         return {"username": name, **await fetcher.fetch_calendar(name, y)}

@@ -1,4 +1,7 @@
+from collections.abc import Iterator
 from datetime import datetime
+
+import pytest
 
 from fastapi.testclient import TestClient
 
@@ -30,8 +33,14 @@ class FakeDb:
 
 
 db = FakeDb()
-app.dependency_overrides[get_db] = lambda: db
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def fake_db() -> Iterator[None]:
+    app.dependency_overrides[get_db] = lambda: db
+    yield
+    app.dependency_overrides.pop(get_db, None)
 
 GOOD = {"name": "Ada", "email": "ada@example.com", "password": "Passw0rd!"}
 

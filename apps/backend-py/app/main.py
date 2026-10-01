@@ -10,7 +10,7 @@ from starlette.requests import Request
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import Response
 
-from app.api import auth, leetcode, profile
+from app.api import auth, codingprofile, leetcode, profile
 from app.core.config import settings
 from app.core.logging import RequestLoggingMiddleware, configure_logging
 from app.core.metrics import PrometheusMiddleware
@@ -63,6 +63,7 @@ api_v1.include_router(leetcode.router)
 # router.use(authenticateToken) placed after the public routes.
 protected = APIRouter(dependencies=[Depends(get_current_user)])
 protected.include_router(profile.router)
+protected.include_router(codingprofile.router)
 api_v1.include_router(protected)
 
 

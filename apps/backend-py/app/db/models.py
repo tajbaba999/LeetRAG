@@ -14,7 +14,9 @@ def _uuid() -> str:
 
 
 def _now() -> datetime:
-    return datetime.now(UTC)
+    # Naive UTC: the columns are `timestamp without time zone` (Prisma's default),
+    # and asyncpg rejects tz-aware values for them.
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 # Prisma's `@default(uuid())` and `@updatedAt` are both client-side behaviors,
