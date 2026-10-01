@@ -17,6 +17,8 @@ def to_asyncpg_url(database_url: str) -> tuple[str, dict[str, object]]:
     parts = urlsplit(database_url)
     query = dict(parse_qsl(parts.query))
     sslmode = query.pop("sslmode", None)
+    # Also from Neon's strings; asyncpg has no such connect() kwarg.
+    query.pop("channel_binding", None)
 
     connect_args: dict[str, object] = {}
     if sslmode in ("require", "verify-ca", "verify-full"):

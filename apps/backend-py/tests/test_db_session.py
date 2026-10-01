@@ -13,3 +13,11 @@ def test_leaves_url_without_sslmode_untouched() -> None:
     url, connect_args = to_asyncpg_url("postgresql://user:pass@localhost:5432/leetplus")
     assert url == "postgresql+asyncpg://user:pass@localhost:5432/leetplus"
     assert connect_args == {}
+
+
+def test_strips_neon_channel_binding() -> None:
+    url, connect_args = to_asyncpg_url(
+        "postgresql://u:p@ep-x-pooler.neon.tech/neondb?sslmode=require&channel_binding=require"
+    )
+    assert url == "postgresql+asyncpg://u:p@ep-x-pooler.neon.tech/neondb"
+    assert connect_args == {"ssl": "require"}

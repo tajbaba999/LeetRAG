@@ -1,15 +1,20 @@
 from collections.abc import Awaitable, Callable
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, Depends, FastAPI
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import Response
 
+from app.api import auth, profile
 from app.core.config import settings
 from app.core.logging import RequestLoggingMiddleware, configure_logging
 from app.core.metrics import PrometheusMiddleware
+from app.core.security import get_current_user
 
 api_v1 = APIRouter(prefix="/api/v1")
 
@@ -51,6 +56,31 @@ async def metrics() -> Response:
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
+api_v1.include_router(auth.router)
+
+# Everything below requires a valid access token, same as Express's
+# router.use(authenticateToken) placed after the public routes.
+protected = APIRouter(dependencies=[Depends(get_current_user)])
+protected.include_router(profile.router)
+api_v1.include_router(protected)
+
+
+# The frontend reads `body.error || body.message`, so errors keep the Express
+# shapes instead of FastAPI's default {"detail": ...}.
+async def _validation_error(_request: Request, exc: Exception) -> JSONResponse:
+    assert isinstance(exc, RequestValidationError)
+    messages = []
+    for err in exc.errors():
+        field = ".".join(str(p) for p in err["loc"][1:]) or "body"
+        messages.append(f"{field}: {err['msg'].removeprefix('Value error, ')}")
+    return JSONResponse({"error": "; ".join(messages)}, status_code=422)
+
+
+async def _http_error(_request: Request, exc: Exception) -> JSONResponse:
+    assert isinstance(exc, StarletteHTTPException)
+    return JSONResponse({"message": exc.detail}, status_code=exc.status_code, headers=exc.headers)
+
+
 def create_app() -> FastAPI:
     configure_logging()
 
@@ -60,6 +90,9 @@ def create_app() -> FastAPI:
         docs_url="/docs" if settings.node_env != "production" else None,
         redoc_url="/redoc" if settings.node_env != "production" else None,
     )
+    app.add_exception_handler(RequestValidationError, _validation_error)
+    app.add_exception_handler(StarletteHTTPException, _http_error)
+
     app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(
