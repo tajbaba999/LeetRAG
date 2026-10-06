@@ -27,8 +27,7 @@ http_requests_in_flight = Gauge(
     ["app_kubernetes_io_name"],
 )
 
-# Used by the ARQ sync workers (ported in steps 18-20), defined here upfront
-# alongside the HTTP metrics, mirroring lib/metrics.ts.
+# Recorded by app.leetcode.sync.run_sync, one observation per sync.
 sync_job_duration_seconds = Histogram(
     "sync_job_duration_seconds",
     "Duration of sync jobs in seconds",

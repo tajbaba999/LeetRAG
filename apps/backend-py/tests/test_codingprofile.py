@@ -176,3 +176,15 @@ def test_signup_and_profile_against_real_db(client: TestClient) -> None:
     token = res.json()["accessToken"]
     me = client.get("/api/v1/profile", headers={"Authorization": f"Bearer {token}"}).json()
     assert me["email"] == "bo@example.com"
+
+
+def test_sync_records_job_metrics(client: TestClient) -> None:
+    from prometheus_client import REGISTRY
+
+    def total(status: str) -> float:
+        return REGISTRY.get_sample_value("sync_job_total", {"platform": "leetcode", "status": status}) or 0
+
+    before = total("completed")
+    assert sse_events(client.post("/api/v1/codingprofile/sync"))[-1][0] == "done"
+    assert total("completed") == before + 1
+    assert REGISTRY.get_sample_value("sync_jobs_in_flight", {"platform": "leetcode"}) == 0

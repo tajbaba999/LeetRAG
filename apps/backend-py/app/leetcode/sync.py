@@ -7,17 +7,21 @@ versions were near-identical copies).
 import asyncio
 import json
 import math
+import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 from typing import Any
 
 import structlog
 from sqlalchemy import delete, insert, select
 
+from app.core.metrics import sync_job_duration_seconds, sync_job_total, sync_jobs_in_flight
 from app.db.models import LeetCodeContestHistory, LeetCodeHistory, LeetCodeProblem, LeetCodeStats
 from app.db.session import async_session_factory
 from app.leetcode import fetcher
 
 log = structlog.get_logger("sync")
+
+PLATFORM = "leetcode"
 
 Emit = Callable[[str, dict[str, Any]], None]
 
@@ -126,11 +130,19 @@ def _summary_columns(profile: dict[str, Any], contest: dict[str, Any], streak: i
 
 
 async def run_sync(user_id: str, username: str, emit: Emit) -> None:
+    sync_jobs_in_flight.labels(PLATFORM).inc()
+    start = time.perf_counter()
+    status = "completed"
     try:
         await _run_sync(user_id, username, emit)
     except Exception as exc:
+        status = "failed"
         log.exception("sync_failed", userId=user_id, username=username)
         emit("error", {"stage": "error", "pct": 0, "msg": f"Sync failed: {exc}"})
+    finally:
+        sync_jobs_in_flight.labels(PLATFORM).dec()
+        sync_job_duration_seconds.labels(PLATFORM, status).observe(time.perf_counter() - start)
+        sync_job_total.labels(PLATFORM, status).inc()
 
 
 async def _run_sync(user_id: str, username: str, emit: Emit) -> None:

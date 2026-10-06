@@ -11,7 +11,6 @@ class Settings(BaseSettings):
     port: int = 3000
 
     database_url: str
-    redis_url: str
     loki_url: str | None = None
 
     jwt_access_secret: str
